@@ -10,15 +10,9 @@ import (
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(s string) (string, error) {
-	if s == "" {
-		return "", nil
-	}
-
-	builder := strings.Builder{}
+	var builder strings.Builder
 	reader := strings.NewReader(s)
-
-	prevRune, isPrevDigit := ' ', false
-	isFirst := true //Introduced to skip prevRune repeat in "4u" testcase (first rune is digit)
+	prevRune, isPrevDigit := '0', true
 
 	for r, _, err := reader.ReadRune(); err != io.EOF; r, _, err = reader.ReadRune() {
 		switch {
@@ -34,9 +28,9 @@ func Unpack(s string) (string, error) {
 				return "", ErrInvalidString
 			}
 
-			//Repeat previous rune N-1 times, except if first rune in string is digit
+			//Repeat previous rune N-1 times
 			n := int(r - '0')
-			if n > 1 && !isFirst {
+			if n > 1 { //nolint:gomnd
 				builder.WriteString(strings.Repeat(string(prevRune), n-1)) //nolint:gomnd
 			}
 			prevRune, isPrevDigit = r, true
@@ -44,8 +38,6 @@ func Unpack(s string) (string, error) {
 			builder.WriteRune(r)
 			prevRune, isPrevDigit = r, false
 		}
-
-		isFirst = false
 	}
 	return builder.String(), nil
 }
