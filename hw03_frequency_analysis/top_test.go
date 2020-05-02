@@ -57,4 +57,21 @@ func TestTop10(t *testing.T) {
 			assert.ElementsMatch(t, expected, Top10(text))
 		}
 	})
+
+	var cases = []struct {
+		name     string
+		str      string
+		expected []string
+	}{
+		{"single word", "aa", []string{"aa"}},
+		{"single word many times", "aa aa aa aa aa aa aa aa aa aa aa", []string{"aa"}},
+		{"exclude digits", "1 4a - a5 a", []string{"a", "-"}},
+		{"example from readme.md", "cat and dog, one dog, two cats and one man", []string{"and", "dog,", "one", "cat", "two", "cats", "man"}},
+	}
+
+	for _, v := range cases {
+		t.Run(v.name, func(t *testing.T) {
+			assert.ElementsMatch(t, v.expected, Top10(v.str))
+		})
+	}
 }
