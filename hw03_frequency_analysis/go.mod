@@ -1,4 +1,4 @@
-module github.com/avbru/homeworks/hw02_unpack_string
+module github.com/avbru/homeworks/hw03_frequency_analysis
 
 go 1.14
 
