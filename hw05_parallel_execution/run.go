@@ -17,7 +17,7 @@ type errCounter struct {
 
 // Run starts tasks in N goroutines and stops its work when receiving M errors from tasks
 func Run(tasks []Task, n int, m int) error {
-	if n < 1 { //nolint:gomnd
+	if n <= 0 {
 		return ErrErrorsNoWorkers
 	}
 
