@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 3 {
+	if len(os.Args) < 3 { //nolint:gomnd
 		log.Fatal("Wrong arguments. Usage: go-envdir /path/to/env/dir command arg1 arg2")
 	}
 
