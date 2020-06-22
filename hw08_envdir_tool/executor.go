@@ -12,6 +12,13 @@ func RunCmd(task []string, env Environment) (returnCode int) {
 	cmd.Stdout, cmd.Stdin, cmd.Stderr = os.Stdout, os.Stdin, os.Stderr
 
 	for k, v := range env {
+		if v == "" {
+			if err := os.Unsetenv(k); err != nil {
+				fmt.Printf("cannot unset env: %s, reason: %s\n", k, err)
+			}
+			continue
+		}
+
 		if err := os.Setenv(k, v); err != nil {
 			fmt.Printf("cannot set env: %s, reason: %s\n", k, err)
 		}
