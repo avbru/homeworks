@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -62,4 +63,34 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+}
+
+func TestConnect(t *testing.T) {
+	l, err := net.Listen("tcp", "127.0.0.1:")
+	require.NoError(t, err)
+	defer func() { require.NoError(t, l.Close()) }()
+
+	tc := NewTelnetClient("", time.Second, os.Stdin, os.Stdout)
+	require.Error(t, tc.Connect())
+
+	tc = NewTelnetClient(l.Addr().String(), time.Second, os.Stdin, os.Stdout)
+	require.NoError(t, tc.Connect())
+}
+
+func TestClose(t *testing.T) {
+	l, err := net.Listen("tcp", "127.0.0.1:")
+	require.NoError(t, err)
+	defer func() { require.NoError(t, l.Close()) }()
+
+	tc := NewTelnetClient(l.Addr().String(), time.Second, os.Stdin, os.Stdout)
+	require.NoError(t, tc.Connect())
+	require.NoError(t, tc.Close())
+}
+
+func TestPassData(t *testing.T) {
+	in := &bytes.Buffer{}
+	out := &bytes.Buffer{}
+	in.WriteString("hello\n")
+	require.NoError(t, passData(in, out))
+	require.Equal(t, "hello\n", out.String())
 }
