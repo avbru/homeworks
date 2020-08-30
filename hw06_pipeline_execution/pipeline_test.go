@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/goleak"
 )
 
 const (
@@ -15,8 +14,6 @@ const (
 )
 
 func TestPipeline(t *testing.T) {
-	defer goleak.VerifyNone(t)
-
 	// Stage generator
 	g := func(name string, f func(v I) I) Stage {
 		return func(in In) Out {
@@ -92,5 +89,93 @@ func TestPipeline(t *testing.T) {
 
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
+	})
+}
+
+func TestPipelineSingleStage(t *testing.T) {
+	stage := func(in In) Out {
+		out := make(Bi)
+		go func() {
+			defer close(out)
+			for v := range in {
+				time.Sleep(sleepPerStage)
+				out <- v
+			}
+		}()
+		return out
+	}
+
+	t.Run("simple case", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]int, 0, 10)
+
+		for s := range ExecutePipeline(in, nil, stage) {
+			result = append(result, s.(int))
+		}
+		require.Equal(t, []int{1, 2, 3, 4, 5}, result)
+	})
+
+	t.Run("done case", func(t *testing.T) {
+		in := make(Bi)
+		done := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		abortDur := sleepPerStage / 2
+
+		go func() {
+			<-time.After(abortDur)
+			close(done)
+		}()
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]int, 0, 10)
+
+		for s := range ExecutePipeline(in, done, stage) {
+			result = append(result, s.(int))
+		}
+		require.Len(t, result, 0)
+	})
+}
+
+func TestInterStage(t *testing.T) {
+	t.Run("path data trough", func(t *testing.T) {
+		in := make(Bi)
+		go func() {
+			in <- "data"
+			close(in)
+		}()
+
+		done := make(Bi)
+
+		out := interStage(in, done)
+		res := <-out
+		require.Equal(t, "data", res.(string))
+	})
+
+	t.Run("done case", func(t *testing.T) {
+		in := make(Bi)
+		go func() {
+			in <- "data"
+			close(in)
+		}()
+		done := make(Bi)
+		close(done)
+		out := interStage(in, done)
+		require.Len(t, out, 0)
 	})
 }
