@@ -5,7 +5,10 @@ linters:
   disable-all: false
   enable-all: true
   disable:
+<<<<<<< HEAD
     - gci
+=======
+>>>>>>> b2b823a40c5abf75fe86782d1e82d201acafe8e6
     - goerr113
     - gochecknoglobals
     - gochecknoinits
