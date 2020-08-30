@@ -1,10 +1,14 @@
 build:
-	go build ./... -o calendar
+	go build -o ./bin/calendar ./cmd/calendar
 
 test:
-	go test -race ./...
+	go test -race ./internal/... ./pkg/...
 
-lint:
+install-lint-deps:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint
+lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build
+test-db:
+	./scripts/db-dev.sh
+.PHONY: build test lint

@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  db-test:
+    container_name: dbtest
+    build:
+      context: ../
+      dockerfile: db-test.Dockerfile
+    depends_on:
+      - devdb
+  devdb:
+    image: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: derparol
+      POSTGRES_USER: calendar
+      DB_HOST: localhost

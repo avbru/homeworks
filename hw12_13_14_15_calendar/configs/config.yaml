@@ -1,0 +1,10 @@
+  logger:
+    level: info
+    path: logfile.log
+  server:
+    port: 8080
+    host: localhost
+    shutdowntimeout: 10s
+  db:
+    url: "postgres://calendar:derparol@localhost:5432/calendar?sslmode=disable"
+
